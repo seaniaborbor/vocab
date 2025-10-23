@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Mastery Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 60px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+        }
+        .btn-primary {
+            background: #667eea;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .option-btn {
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+        .option-btn:hover {
+            transform: translateX(5px);
+        }
+        .correct {
+            background-color: #28a745 !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+        .wrong {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .progress {
+            height: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .streak-fire {
+            color: #ff4500;
+            animation: bounce 0.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        footer {
+            margin-top: 60px;
+            padding: 25px;
+            background: #333;
+            color: white;
+            border-top: 5px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="height: 100vh !important;">
+        <div id="start-screen" class="card animate__animated animate__fadeIn">
+            <div class="card-header">
+                <h2><i class="fas fa-book-open me-2"></i>Vocabulary Mastery Quiz</h2>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead">Elevate your vocabulary skills with Isaac K. Dweh's curated words. Choose your challenge level!</p>
+                <div class="btn-group-vertical w-100">
+                    <button class="btn btn-primary btn-lg mb-3" onclick="startQuiz(20, 'Beginner')"><i class="fas fa-seedling me-2"></i>Beginner (20 Words)</button>
+                    <button class="btn btn-primary btn-lg mb-3" onclick="startQuiz(30, 'Intermediate')"><i class="fas fa-rocket me-2"></i>Intermediate (30 Words)</button>
+                    <button class="btn btn-primary btn-lg" onclick="startQuiz(50, 'Expert')"><i class="fas fa-crown me-2"></i>Expert (50 Words)</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-screen" style="display: none;" class="card animate__animated animate__fadeIn">
+            <div class="card-header">
+                <h2><i class="fas fa-question-circle me-2"></i>Question <span id="qnum">1</span> / <span id="total-questions">?</span></h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Points: <strong id="points">0</strong></span>
+                    <span>Streak: <strong id="streak">0</strong> <i id="streak-icon" class="fas fa-fire ms-1"></i></span>
+                </div>
+                <div class="progress mb-3" id="quiz-progress">
+                    <div class="progress-bar bg-info" role="progressbar" id="quiz-progress-bar"></div>
+                </div>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="progress flex-grow-1" id="timer-progress">
+                        <div class="progress-bar bg-warning" role="progressbar" id="progress-bar"></div>
+                    </div>
+                    <span class="ms-3 fs-5" id="time-left">15</span>
+                </div>
+                <p id="question" class="lead fw-bold mb-4"></p>
+                <div id="options" class="d-grid gap-3"></div>
+            </div>
+        </div>
+
+        <div id="end-screen" style="display: none;" class="card animate__animated animate__fadeIn">
+            <div class="card-header">
+                <h2><i class="fas fa-trophy me-2"></i>Quiz Completed!</h2>
+            </div>
+            <div class="card-body text-center">
+                <h3>Your Score: <span id="score">0</span> / <span id="total-score">0</span></h3>
+                <h4>Points Earned: <span id="final-points">0</span></h4>
+                <h4>Max Streak: <span id="max-streak">0</span></h4>
+                <h4>Rank: <span id="rank" class="badge bg-success"></span></h4>
+                <button class="btn btn-primary btn-lg mt-4" onclick="restartQuiz()"><i class="fas fa-redo me-2"></i>Restart Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="endToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <img src="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100028673000242" class="rounded-circle me-2" alt="Isaac K. Dweh" width="40" height="40">
+                <strong class="me-auto">Isaac K. Dweh</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Great job! Keep mastering these words for WASSCE success and beyond.
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        Designed by Tarnue Pythagoras Borbor
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        const vocabulary = [
+            // ... (same vocabulary array as before)
+            { word: "Abundant", pos: "Adjective", meaning: "Existing or available in large quantities; plentiful.", synonyms: ["plentiful", "copious", "ample", "bountiful", "rich", "profuse"], antonyms: ["scarce", "sparse", "meager", "insufficient"], forms: "abundant (adj.), abundance (n.)", example: "The abundant rainfall ensured a bountiful harvest." },
+            { word: "Ambiguous", pos: "Adjective", meaning: "Open to more than one interpretation; not having one obvious meaning.", synonyms: ["unclear", "vague", "equivocal", "cryptic", "uncertain"], antonyms: ["clear", "unambiguous", "definite", "explicit", "certain"], forms: "ambiguous (adj.), ambiguity (n.)", example: "The ambiguous statement led to multiple interpretations." },
+            { word: "Anecdote", pos: "Noun", meaning: "A short and amusing or interesting story about a real incident or person.", synonyms: ["story", "tale", "account", "narrative", "reminiscence"], forms: "anecdote (n.), anecdotal (adj.)", example: "She shared an amusing anecdote about her travels." },
+            { word: "Apathy", pos: "Noun", meaning: "Lack of interest, enthusiasm, or concern.", synonyms: ["indifference", "unconcern", "lethargy", "passivity", "disinterest"], antonyms: ["interest", "enthusiasm", "passion", "concern", "zeal"], forms: "apathy (n.), apathetic (adj.)", example: "Public apathy towards the election was a major issue." },
+            { word: "Assess", pos: "Verb", meaning: "To evaluate or estimate the nature, ability, or quality of something.", synonyms: ["evaluate", "judge", "appraise", "gauge", "rate", "analyze"], forms: "assess (v.), assessment (n.)", example: "We need to assess the damage before planning repairs." },
+            { word: "Bias", pos: "Noun", meaning: "Prejudice in favor of or against one thing, person, or group compared with another.", synonyms: ["prejudice", "partiality", "favoritism", "inclination", "partisanship"], antonyms: ["impartiality", "objectivity", "neutrality", "fairness"], forms: "bias (n.), biased (adj.)", example: "The judge was careful to avoid any appearance of bias." },
+            { word: "Cacophony", pos: "Noun", meaning: "A harsh, discordant mixture of sounds.", synonyms: ["discord", "din", "racket", "noise", "clamor", "dissonance"], antonyms: ["harmony", "euphony", "silence", "tranquility"], forms: "cacophony (n.), cacophonous (adj.)", example: "A cacophony of car horns erupted from the traffic jam." },
+            { word: "Catalyst", pos: "Noun", meaning: "A person or thing that precipitates an event or change.", synonyms: ["trigger", "stimulus", "impetus", "spark", "motivator"], forms: "catalyst (n.), catalytic (adj.)", example: "The assassination was the catalyst for the outbreak of war." },
+            { word: "Cohesive", pos: "Adjective", meaning: "Characterized by or causing connection or unification.", synonyms: ["united", "connected", "unified", "harmonious", "integrated"], antonyms: ["divided", "fragmented", "disjointed", "disconnected"], forms: "cohesive (adj.), cohesion (n.)", example: "A cohesive team is essential for the success of any project." },
+            { word: "Compelling", pos: "Adjective", meaning: "Evoking interest, attention, or admiration in a powerfully irresistible way.", synonyms: ["convincing", "persuasive", "captivating", "engrossing", "irresistible"], antonyms: ["unconvincing", "weak", "implausible", "boring"], forms: "compelling (adj.)", example: "The lawyer made a compelling argument for the defense." },
+            { word: "Conundrum", pos: "Noun", meaning: "A confusing and difficult problem or question.", synonyms: ["puzzle", "riddle", "enigma", "paradox", "dilemma"], forms: "conundrum (n.)", example: "Solving the energy crisis is a complex conundrum." },
+            { word: "Credible", pos: "Adjective", meaning: "Able to be believed; convincing.", synonyms: ["believable", "plausible", "trustworthy", "reliable", "convincing"], antonyms: ["incredible", "unbelievable", "implausible", "untrustworthy"], forms: "credible (adj.), credibility (n.)", example: "The news anchor is a credible source of information." },
+            { word: "Dilemma", pos: "Noun", meaning: "A situation in which a difficult choice has to be made between two or more alternatives.", synonyms: ["predicament", "quandary", "problem", "catch-22", "tight spot"], forms: "dilemma (n.)", example: "She faced the dilemma of choosing between her career and her family." },
+            { word: "Diminish", pos: "Verb", meaning: "To make or become less.", synonyms: ["reduce", "decrease", "lessen", "decline", "dwindle", "weaken"], antonyms: ["increase", "enhance", "intensify", "grow", "amplify"], forms: "diminish (v.)", example: "The threat of storm will diminish by morning." },
+            { word: "Eloquent", pos: "Adjective", meaning: "Fluent or persuasive in speaking or writing.", synonyms: ["articulate", "expressive", "fluent", "silver-tongued", "persuasive"], antonyms: ["inarticulate", "tongue-tied", "halting", "ineffective"], forms: "eloquent (adj.), eloquence (n.)", example: "The president gave an eloquent speech on national unity." },
+            { word: "Enthusiastic", pos: "Adjective", meaning: "Having or showing intense and eager enjoyment, interest, or approval.", synonyms: ["eager", "keen", "passionate", "ardent", "zealous", "excited"], antonyms: ["apathetic", "indifferent", "unenthusiastic", "reluctant"], forms: "enthusiastic (adj.), enthusiasm (n.)", example: "The children were enthusiastic about the trip to the zoo." },
+            { word: "Ephemeral", pos: "Adjective", meaning: "Lasting for a very short time.", synonyms: ["fleeting", "transient", "transitory", "momentary", "short-lived"], antonyms: ["permanent", "eternal", "perpetual", "everlasting", "enduring"], forms: "ephemeral (adj.)", example: "The beauty of the cherry blossoms is tragically ephemeral." },
+            { word: "Exuberant", pos: "Adjective", meaning: "Filled with or characterized by a lively energy and excitement.", synonyms: ["ebullient", "energetic", "lively", "vibrant", "spirited", "effervescent"], antonyms: ["gloomy", "depressed", "lethargic", "apathetic", "subdued"], forms: "exuberant (adj.), exuberance (n.)", example: "The crowd gave an exuberant cheer when their team won." },
+            { word: "Fluctuate", pos: "Verb", meaning: "To rise and fall irregularly in number or amount.", synonyms: ["vary", "change", "shift", "oscillate", "waver", "seesaw"], antonyms: ["stabilize", "plateau", "remain steady"], forms: "fluctuate (v.), fluctuation (n.)", example: "Stock prices fluctuate based on market conditions." },
+            { word: "Hypothesis", pos: "Noun", meaning: "A supposition or proposed explanation made on the basis of limited evidence as a starting point for further investigation.", synonyms: ["theory", "proposition", "supposition", "assumption", "thesis"], forms: "hypothesis (n.), hypothesize (v.), hypothetical (adj.)", example: "The scientist's hypothesis was proven correct by the experiment." },
+            { word: "Imply", pos: "Verb", meaning: "To suggest or hint at something without stating it directly.", synonyms: ["suggest", "insinuate", "intimate", "hint at", "allude to"], antonyms: ["state", "declare", "assert", "explicit"], forms: "imply (v.), implication (n.), implicit (adj.)", example: "His tone implied disapproval, though he never said it." },
+            { word: "Incorporate", pos: "Verb", meaning: "To combine or include something as part of a whole.", synonyms: ["integrate", "include", "assimilate", "embody", "fuse"], antonyms: ["separate", "exclude", "remove", "segregate"], forms: "incorporate (v.), incorporation (n.)", example: "We will incorporate your feedback into the final design." },
+            { word: "Innovative", pos: "Adjective", meaning: "Featuring new and advanced methods; original and creative.", synonyms: ["inventive", "original", "groundbreaking", "creative", "pioneering"], antonyms: ["conventional", "traditional", "unoriginal", "derivative"], forms: "innovative (adj.), innovation (n.), innovate (v.)", example: "The startup is known for its innovative approach to AI." },
+            { word: "Insight", pos: "Noun", meaning: "A deep and accurate understanding of a complex person or thing.", synonyms: ["understanding", "perception", "discernment", "awareness", "comprehension"], antonyms: ["ignorance", "obliviousness", "misunderstanding"], forms: "insight (n.), insightful (adj.)", example: "The book offers valuable insight into the human psyche." },
+            { word: "Inspire", pos: "Verb", meaning: "To fill someone with the urge or ability to do or feel something.", synonyms: ["motivate", "encourage", "stimulate", "galvanize", "spur"], antonyms: ["discourage", "deter", "dishearten", "demotivate"], forms: "inspire (v.), inspiration (n.), inspirational (adj.)", example: "Her story continues to inspire young artists around the world." },
+            { word: "Juxtapose", pos: "Verb", meaning: "To place two or more things close together to contrast or compare them.", synonyms: ["contrast", "compare", "set side-by-side", "collocate"], forms: "juxtapose (v.), juxtaposition (n.)", example: "The exhibition juxtaposes modern sculpture with classical paintings." },
+            { word: "Luminous", pos: "Adjective", meaning: "Emitting or reflecting light, especially in the dark; glowing.", synonyms: ["glowing", "radiant", "bright", "luminescent", "incandescent"], antonyms: ["dark", "dim", "dull", "lackluster"], forms: "luminous (adj.), luminosity (n.)", example: "The watch had a luminous dial that glowed in the dark." },
+            { word: "Melancholy", pos: "Adjective/Noun", meaning: "A feeling of deep, often thoughtful, sadness.", synonyms: ["sorrowful", "sad", "pensive", "gloomy", "mournful"], antonyms: ["cheerful", "joyful", "buoyant", "lighthearted"], forms: "melancholy (adj., n.), melancholic (adj.)", example: "A feeling of melancholy descended on her as autumn began." },
+            { word: "Mitigate", pos: "Verb", meaning: "To make something less severe, harmful, or painful.", synonyms: ["alleviate", "reduce", "lessen", "moderate", "soften"], antonyms: ["aggravate", "intensify", "exacerbate", "increase"], forms: "mitigate (v.), mitigation (n.)", example: "Planting trees helps mitigate the urban heat island effect." },
+            { word: "Narrative", pos: "Noun/Adjective", meaning: "A spoken or written account of connected events; a story.", synonyms: ["story", "account", "chronicle", "tale", "storyline"], forms: "narrative (n., adj.)", example: "The documentary presented a compelling narrative of their journey." },
+            { word: "Nuance", pos: "Noun", meaning: "A subtle or slight degree of difference in meaning, expression, or sound.", synonyms: ["subtlety", "distinction", "shade", "refinement", "gradation"], antonyms: ["obviousness", "broad distinction"], forms: "nuance (n.), nuanced (adj.)", example: "A skilled translator understands the nuances of both languages." },
+            { word: "Objective", pos: "Adjective", meaning: "Not influenced by personal feelings or opinions; factual.", synonyms: ["impartial", "unbiased", "neutral", "dispassionate", "fair"], antonyms: ["subjective", "biased", "partial", "prejudiced"], forms: "objective (adj.), objectivity (n.)", example: "A journalist must strive to be objective in their reporting." },
+            { word: "Perceptive", pos: "Adjective", meaning: "Having or showing keen insight and understanding.", synonyms: ["insightful", "discerning", "observant", "sharp", "astute"], antonyms: ["oblivious", "unobservant", "imperceptive"], forms: "perceptive (adj.), perception (n.)", example: "Her perceptive analysis revealed the underlying problem." },
+            { word: "Persevere", pos: "Verb", meaning: "To continue in a course of action despite difficulty or lack of success.", synonyms: ["persist", "continue", "carry on", "endure", "keep going"], antonyms: ["give up", "quit", "surrender", "stop"], forms: "persevere (v.), perseverance (n.)", example: "You must persevere if you want to achieve your goals." },
+            { word: "Phenomenon", pos: "Noun", meaning: "A remarkable or extraordinary fact or event that is observed to exist.", synonyms: ["occurrence", "event", "fact", "marvel", "spectacle"], forms: "phenomenon (n.), phenomenal (adj.)", example: "The northern lights are a natural phenomenon." },
+            { word: "Ponder", pos: "Verb", meaning: "To think about something carefully and thoroughly.", synonyms: ["consider", "contemplate", "meditate on", "reflect on", "mull over"], antonyms: ["ignore", "disregard", "neglect"], forms: "ponder (v.)", example: "He liked to sit and ponder the mysteries of the universe." },
+            { word: "Precise", pos: "Adjective", meaning: "Marked by exactness and accuracy of detail.", synonyms: ["exact", "accurate", "specific", "definite", "meticulous"], antonyms: ["imprecise", "inaccurate", "vague", "approximate"], forms: "precise (adj.), precision (n.)", example: "The success of the surgery depended on precise measurements." },
+            { word: "Prolific", pos: "Adjective", meaning: "Producing much fruit, work, or offspring; highly productive.", synonyms: ["productive", "fruitful", "fertile", "copious"], antonyms: ["unproductive", "barren", "scarce"], forms: "prolific (adj.)", example: "He was a prolific composer, writing hundreds of symphonies." },
+            { word: "Relevant", pos: "Adjective", meaning: "Closely connected or appropriate to the matter at hand.", synonyms: ["pertinent", "applicable", "related", "germane", "apropos"], antonyms: ["irrelevant", "unrelated", "immaterial", "extraneous"], forms: "relevant (adj.), relevance (n.)", example: "Please keep your comments relevant to the topic." },
+            { word: "Resilient", pos: "Adjective", meaning: "Able to withstand or recover quickly from difficult conditions.", synonyms: ["tough", "hardy", "durable", "flexible", "robust"], antonyms: ["fragile", "vulnerable", "weak", "delicate"], forms: "resilient (adj.), resilience (n.)", example: "Children are often remarkably resilient." },
+            { word: "Rhetoric", pos: "Noun", meaning: "The art of effective or persuasive speaking or writing.", synonyms: ["oratory", "eloquence", "persuasion", "discourse"], forms: "rhetoric (n.), rhetorical (adj.)", example: "The politician's fiery rhetoric energized his supporters." },
+            { word: "Sarcastic", pos: "Adjective", meaning: "Using irony to mock or convey contempt.", synonyms: ["sardonic", "ironic", "mocking", "caustic", "scornful"], antonyms: ["sincere", "straightforward", "genuine"], forms: "sarcastic (adj.), sarcasm (n.)", example: "Her sarcastic reply made it clear she was not amused." },
+            { word: "Saturate", pos: "Verb", meaning: "To soak, fill, or load to capacity.", synonyms: ["soak", "drench", "imbue", "permeate", "flood", "overwhelm"], antonyms: ["dehydrate", "dry", "drain"], forms: "saturate (v.), saturation (n.)", example: "The Company aimed to saturate the market with its advertising." },
+            { word: "Skeptical", pos: "Adjective", meaning: "Not easily convinced; having doubts or reservations.", synonyms: ["doubtful", "dubious", "questioning", "incredulous", "suspicious"], antonyms: ["convinced", "certain", "credulous", "trusting"], forms: "skeptical (adj.), skepticism (n.)", example: "I'm skeptical of his claims until I see some evidence." },
+            { word: "Subjective", pos: "Adjective", meaning: "Based on or influenced by personal feelings and opinions.", synonyms: ["personal", "individual", "biased", "emotional"], antonyms: ["objective", "impartial", "unbiased"], forms: "subjective (adj.), subjectivity (n.)", example: "Art criticism is often highly subjective." },
+            { word: "Tacit", pos: "Adjective", meaning: "Understood or implied without being stated.", synonyms: ["implicit", "unspoken", "implied", "inferred", "understood"], antonyms: ["explicit", "stated", "expressed", "direct"], forms: "tacit (adj.)", example: "We had a tacit agreement not to discuss the matter." },
+            { word: "Tenacious", pos: "Adjective", meaning: "Tending to keep a firm hold of something; persistent.", synonyms: ["persistent", "determined", "resolute", "steadfast", "dogged"], antonyms: ["weak", "yielding", "irresolute", "feeble"], forms: "tenacious (adj.), tenacity (n.)", example: "The lawyer's tenacious cross-examination uncovered the truth." },
+            { word: "Tranquil", pos: "Adjective", meaning: "Free from disturbance; calm.", synonyms: ["peaceful", "calm", "serene", "placid", "restful"], antonyms: ["agitated", "noisy", "disturbed", "chaotic"], forms: "tranquil (adj.), tranquility (n.)", example: "The lake was tranquil in the early morning light." },
+            { word: "Validate", pos: "Verb", meaning: "To check or prove the validity or accuracy of something.", synonyms: ["confirm", "verify", "authenticate", "substantiate", "certify"], antonyms: ["invalidate", "disprove", "discredit", "negate"], forms: "validate (v.), validation (n.)", example: "The experiment's results were validated by an independent lab." },
+            { word: "Vigilant", pos: "Adjective", meaning: "Keeping careful watch for potential danger or difficulties.", synonyms: ["watchful", "observant", "alert", "attentive", "wary"], antonyms: ["inattentive", "negligent", "careless", "oblivious"], forms: "vigilant (adj.), vigilance (n.)", example: "Security personnel must remain vigilant at all times." }
+        ];
+
+        let selectedWords = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let points = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let timerInterval;
+        let timeLeft = 15;
+        let level = '';
+        const allMeanings = vocabulary.map(v => v.meaning);
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz(num, lvl) {
+            level = lvl;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            selectedWords = shuffle([...vocabulary]).slice(0, num);
+            shuffle(selectedWords);
+            currentQuestion = 0;
+            score = 0;
+            points = 0;
+            streak = 0;
+            maxStreak = 0;
+            document.getElementById('total-questions').innerText = num;
+            updateQuizProgress();
+            loadQuestion();
+        }
+
+        function updateQuizProgress() {
+            const percent = (currentQuestion / selectedWords.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${percent}%`;
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= selectedWords.length) {
+                endQuiz();
+                return;
+            }
+            updateQuizProgress();
+            const word = selectedWords[currentQuestion];
+            document.getElementById('qnum').innerText = currentQuestion + 1;
+            document.getElementById('question').innerText = `What is the core meaning of "${word.word}" (${word.pos})?`;
+
+            const correctMeaning = word.meaning;
+            const wrongMeanings = shuffle(allMeanings.filter(m => m !== correctMeaning)).slice(0, 3);
+            const options = shuffle([correctMeaning, ...wrongMeanings]);
+
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn', 'btn-outline-primary', 'option-btn');
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt === correctMeaning, btn, correctMeaning);
+                optionsDiv.appendChild(btn);
+            });
+
+            timeLeft = 15;
+            document.getElementById('progress-bar').style.width = '100%';
+            document.getElementById('time-left').innerText = Math.ceil(timeLeft);
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                const percent = (timeLeft / 15) * 100;
+                document.getElementById('progress-bar').style.width = `${percent}%`;
+                document.getElementById('time-left').innerText = Math.ceil(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleAnswer(false, null, correctMeaning);
+                }
+            }, 100);
+            updateStreakDisplay();
+        }
+
+        function handleAnswer(isCorrect, selectedBtn, correctMeaning) {
+            clearInterval(timerInterval);
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.innerText === correctMeaning) {
+                    btn.classList.add('correct');
+                } else if (btn === selectedBtn) {
+                    btn.classList.add('wrong');
+                    if (selectedBtn) selectedBtn.classList.add('animate__animated', 'animate__shakeX');
+                }
+            });
+            if (isCorrect) {
+                score++;
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+                const bonus = Math.floor(timeLeft / 3);
+                points += 10 + bonus;
+                if (streak % 5 === 0) points += 20;
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } else {
+                streak = 0;
+            }
+            document.getElementById('points').innerText = points;
+            updateStreakDisplay();
+            setTimeout(() => {
+                currentQuestion++;
+                loadQuestion();
+            }, 2000);
+        }
+
+        function updateStreakDisplay() {
+            document.getElementById('streak').innerText = streak;
+            const icon = document.getElementById('streak-icon');
+            if (streak >= 3) {
+                icon.classList.add('streak-fire');
+            } else {
+                icon.classList.remove('streak-fire');
+            }
+        }
+
+        function endQuiz() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+            document.getElementById('score').innerText = score;
+            document.getElementById('total-score').innerText = selectedWords.length;
+            document.getElementById('final-points').innerText = points;
+            document.getElementById('max-streak').innerText = maxStreak;
+            const percentage = (score / selectedWords.length) * 100;
+            let rank = 'Novice';
+            let badgeClass = 'bg-secondary';
+            if (percentage >= 90) {
+                rank = 'Master';
+                badgeClass = 'bg-warning text-dark';
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.6 }
+                });
+            } else if (percentage >= 70) {
+                rank = 'Expert';
+                badgeClass = 'bg-primary';
+            } else if (percentage >= 50) {
+                rank = 'Apprentice';
+                badgeClass = 'bg-info';
+            }
+            const rankEl = document.getElementById('rank');
+            rankEl.innerText = rank;
+            rankEl.className = `badge ${badgeClass}`;
+
+            const toastEl = document.getElementById('endToast');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        function restartQuiz() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'block';
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</body>
+</html>
